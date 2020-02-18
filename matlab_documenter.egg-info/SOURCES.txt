@@ -1,0 +1,8 @@
+mdoc.py
+setup.py
+matlab_documenter.egg-info/PKG-INFO
+matlab_documenter.egg-info/SOURCES.txt
+matlab_documenter.egg-info/dependency_links.txt
+matlab_documenter.egg-info/entry_points.txt
+matlab_documenter.egg-info/requires.txt
+matlab_documenter.egg-info/top_level.txt
