@@ -28,7 +28,8 @@ class Pipeline:
     def __init__(self):
         self.filters = [
                 IncludeFileFilter(),
-                ExecuteCodeFilter()
+                ExecuteCodeFilter(),
+                RemoveExtraIntroFilter()
                 ]
 
     def run(self, data):
@@ -131,3 +132,11 @@ class ExecuteCodeFilter(Filter):
                         cmd += line
 
         return out_data
+
+class RemoveExtraIntroFilter(Filter):
+    def process(self,data):
+        data = re.sub(r'\n\n', '\n', data, 0)
+        return data
+
+
+
