@@ -1,5 +1,7 @@
 import click
 import os
+import re
+import io
 
 @click.command()
 @click.argument('input', type=click.File('r'))
@@ -9,88 +11,123 @@ def cli(input, output):
 
     This program parses the INPUT markdown file into the OUTPUT markdown file and allows additional features that are not currently supported by GitHub as including a markdown file inside another and excuting MATLAB code from the INPUT file.
     """
-    while True:
-        # Read a line from input file.
-        line = input.readline()
-        # In no line is read, end loop.
-        if not line:
-            break
+    # Read a line from input file.
+    data = input.read()
+    #line = includeFile(line);
 
-        line = includeFile(line);
+    #pipeline = Pipeline
 
-        # Write line into outfile.
-        output.write(line)
-        output.flush()
+    pipeline = Pipeline()
+    data = pipeline.run(data)
 
+    # Write line into outfile.
+    output.write(data)
+    output.flush()
 
-def includeFile(line):
-    # Look for markup of includind a file @[opts](path/file.md).
-    if line.find("@[") == -1:
-        return line
+class Pipeline:
+    def __init__(self):
+        self.filters = [
+                IncludeFileFilter(),
+                ExecuteCodeFilter()
+                ]
 
-    # Get the options.
-    opts = line[line.find("@[")+2:line.find("]")]
-    opts = opts.replace('=',',')
-    opts = opts.split(",")
-    # Get the filepath.
-    filepath = line[line.find("(")+1:line.find(")")]
+    def run(self, data):
+        for f in self.filters:
+            data = f.process(data)
 
-    # Open the file to include.
-    f = open(filepath,"r")
+        return data
 
-    line = "```"
+class Filter:
+    def process(self,data):
+        while True:
+            searchObj = re.search(self.reg,data,re.M|re.I)
+            if not searchObj:
+                break
+            handle = self.run(searchObj)
+            data = re.sub(self.reg, handle, data, 1)
+        return data
 
-    # Check if style is defined.
-    if "style" in opts:
-        line += opts[opts.index("style")+1]
+class IncludeFileFilter(Filter):
+    def __init__(self):
+        self.reg = r'@\[(.*?)]\((.*?)\)'
 
-    line += '\n'
+    def run(self, searchObj):
+        opts = searchObj.group(1)
+        opts = opts.replace('=',',')
+        opts = opts.split(",")
 
-    if "ini" in opts:
+        filepath = searchObj.group(2)
+
+        f = open(filepath,'r')
+
+        if not "ini" in opts:
+            return  f.read()
+
         ini = opts[opts.index("ini")+1]
         end = opts[opts.index("end")+1]
-    else:
-        ini = -1
 
-    ini_found = -1
-    cmd = ''
-
-    while True:
-        # Read a line from input file.
-        aux = f.readline()
-        # In no line is read, end loop.
-        if not aux:
-            break
-
-        if ini != -1:
+        ini_found = -1
+        handle = ""
+        
+        while True:
+            # Read a line from input file.
+            aux = f.readline()
+            # In no line is read, end loop.
+            if not aux:
+                break
+        
             if aux.find(end) != -1 and ini_found == 1:
                 break
-
-        if ini == -1 or ini_found == 1:
-            line += aux
-            cmd += aux
-
-        if ini != -1:
+        
+            if ini_found == 1:
+                handle += aux
+        
             if aux.find(ini) != -1:
                 ini_found = 1
 
-    line += "```"
+        return handle
 
-    if "exec" in opts:
-        line += "\n```\n"
+class ExecuteCodeFilter(Filter):
+    def process(self,data):
+        reg_ini = r'```(.*?)exec(.*?)\n'
+        reg_end = r'```\n'
 
-        cmd = cmd.split('\n')
-        cmd = ','.join(cmd)
-        cmd = '\"cd ' + os.path.dirname(filepath) +';' + cmd + ",exit;\""
-        cmd = 'matlab -nosplash -nodesktop -nodisplay -r ' + cmd
+        out_data = ''
+        buf = io.StringIO(data)
+        cmd = ''
 
-        ans = os.popen(cmd).read()
-        ans = ans.split('\n')
-        ans = ans[11:]
-        ans.pop()
-        ans = '\n'.join(ans)
-        line += ans
+        while True:
+            line = buf.readline()
+            if not line:
+                break
+            out_data += line
 
-        line += "```"
+            searchObj = re.search(reg_ini,line,re.M|re.I)
+            if searchObj:
+                while True:
+                    line = buf.readline()
+                    out_data += line
+                    if re.search(reg_end,line,re.M|re.I):
+                        out_data += '``` ANS\n'
 
-    return line
+                        cmd = cmd.split('\n')
+                        cmd = ','.join(cmd)
+                        cmd = '\"cd ' + searchObj.group(2) +';' + cmd + ",exit;\""
+                        cmd = 'matlab -nosplash -nodesktop -nodisplay -r ' + cmd
+
+                        ans = os.popen(cmd).read()
+                        ans = ans.split('\n')
+                        ans = ans[11:]
+                        ans.pop()
+                        ans = '\n'.join(ans)
+
+                        out_data += ans
+
+                        out_data += '```\n'
+
+                        break
+
+                    else:
+                        cmd += line
+
+        return out_data
