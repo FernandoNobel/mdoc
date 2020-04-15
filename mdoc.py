@@ -6,31 +6,43 @@ import io
 @click.command()
 @click.argument('input', type=click.File('r'))
 @click.argument('output', type=click.File('w'))
-def cli(input, output):
+@click.option('--no-exec', is_flag=True, help="Do not execute code.")
+def cli(input, output, no_exec):
     """MATLAB-DOCUMENTER
 
     This program parses the INPUT markdown file into the OUTPUT markdown file and allows additional features that are not currently supported by GitHub as including a markdown file inside another and excuting MATLAB code from the INPUT file.
+
+    Include a external file. \t @[]()
+
+    Execute the code: \t ``` * exec /path/to/workplace
     """
     # Read a line from input file.
     data = input.read()
-    #line = includeFile(line);
 
-    #pipeline = Pipeline
-
+    # Set up the pipeline of filters.
     pipeline = Pipeline()
+
+    pipeline.addFilter( IncludeFileFilter() )
+
+    if not no_exec:
+        pipeline.addFilter( ExecuteCodeFilter() )
+
+    pipeline.addFilter( RemoveExtraIntroFilter() )
+
+    # Run the pipeline.
     data = pipeline.run(data)
 
-    # Write line into outfile.
+    # Write data into outfile.
     output.write(data)
     output.flush()
 
 class Pipeline:
     def __init__(self):
-        self.filters = [
-                IncludeFileFilter(),
-                ExecuteCodeFilter(),
-                RemoveExtraIntroFilter()
-                ]
+        self.filters = []
+
+    def addFilter(self,f):
+        # Add a new filter to the pipeline.
+        self.filters.append(f)
 
     def run(self, data):
         for f in self.filters:
@@ -137,6 +149,3 @@ class RemoveExtraIntroFilter(Filter):
     def process(self,data):
         data = re.sub(r'\n\n', '\n', data, 0)
         return data
-
-
-
