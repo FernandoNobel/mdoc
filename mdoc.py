@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import click
 import os
 import re
@@ -149,3 +150,6 @@ class RemoveExtraIntroFilter(Filter):
     def process(self,data):
         data = re.sub(r'\n\n', '\n', data, 0)
         return data
+
+if __name__ == '__main__':
+    cli(obj={})
