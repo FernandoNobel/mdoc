@@ -28,7 +28,7 @@ def cli(input, output, no_exec):
     if not no_exec:
         pipeline.addFilter( ExecuteCodeFilter() )
 
-    pipeline.addFilter( RemoveExtraIntroFilter() )
+    # pipeline.addFilter( RemoveExtraIntroFilter() )
 
     # Run the pipeline.
     data = pipeline.run(data)
@@ -148,7 +148,7 @@ class ExecuteCodeFilter(Filter):
 
 class RemoveExtraIntroFilter(Filter):
     def process(self,data):
-        data = re.sub(r'\n\n', '\n', data, 0)
+        data = re.sub(r'\n\n\n', '\n\n', data, 0)
         return data
 
 if __name__ == '__main__':
