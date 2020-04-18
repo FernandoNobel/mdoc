@@ -45,6 +45,7 @@ def cli(input, output, no_exec):
     # Set up the pipeline of filters.
     pipeline = Pipeline()
 
+    pipeline.addFilter( CommentFilter() )
     pipeline.addFilter( IncludeFileFilter() )
 
     #if not no_exec:
@@ -242,10 +243,42 @@ class IncludeFileFilter(Filter):
             if aux.find(ini) != -1:
                 ini_found = 1
 
-
-        print(text,end='')
         return text
            
+class CommentFilter(Filter):
+    """ COMMENTFILTER
+
+    Remove commented text and avoids its processing in the pipeline.
+    """
+    
+    def run(self,data):
+        """ RUN
+        @brief: Run the filter.
+        
+        @param: data Input text to process.
+                
+        @return: void Output text processed.
+        """
+        
+        while True:
+            # Search comment tags.
+            commentStart = self.searchReg(data,r'<!--')
+            commentEnd = self.searchReg(data,r'-->')
+            
+            # If not found anything, break loop.
+            if not commentStart:
+                break
+
+            # Get index interval to delete.
+            indexStart = commentStart.span(0)[0]
+            indexEnd = commentEnd.span(0)[1]
+
+            # Delete index interval.
+            data = data[0: indexStart:] + data[indexEnd: :]
+
+        return data
+
+    
 #class ExecuteCodeFilter(Filter):
 #    def process(self,data):
 #        reg_ini = r'```(.*?)exec(.*?)\n'
