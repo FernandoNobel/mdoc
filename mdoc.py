@@ -9,7 +9,8 @@ from abc import ABC, abstractmethod
 @click.argument('input', type=click.File('r'))
 @click.argument('output', type=click.File('w'))
 @click.option('--no-exec', is_flag=True, help="Do not execute code.")
-def cli(input, output, no_exec):
+@click.option('--intro', is_flag=True, help="Remove double intros.")
+def cli(input, output, no_exec, intro):
     """MATLAB-DOCUMENTER
 
     This program parses the INPUT markdown file into the OUTPUT markdown file
@@ -51,7 +52,8 @@ def cli(input, output, no_exec):
     #if not no_exec:
         #pipeline.addFilter( ExecuteCodeFilter() )
 
-    # pipeline.addFilter( RemoveExtraIntroFilter() )
+    if intro:
+        pipeline.addFilter( RemoveExtraIntroFilter() )
 
     # Run the pipeline.
     data = pipeline.run(data)
