@@ -51,7 +51,7 @@ def cli(input, output, no_exec):
     #if not no_exec:
         #pipeline.addFilter( ExecuteCodeFilter() )
 
-    pipeline.addFilter( RemoveExtraIntroFilter() )
+    # pipeline.addFilter( RemoveExtraIntroFilter() )
 
     # Run the pipeline.
     data = pipeline.run(data)
@@ -219,29 +219,33 @@ class IncludeFileFilter(Filter):
         f = open(filepath,'r')
 
         if not "ini" in opts:
-            return  f.read()
+            text =  f.read()
 
-        ini = opts[opts.index("ini")+1]
-        end = opts[opts.index("end")+1]
+        else:
+            ini = opts[opts.index("ini")+1]
+            end = opts[opts.index("end")+1]
 
-        ini_found = -1
-        text = ""
+            ini_found = -1
+            text = ""
         
-        while True:
-            # Read a line from input file.
-            aux = f.readline()
-            # In no line is read, end loop.
-            if not aux:
-                break
-        
-            if aux.find(end) != -1 and ini_found == 1:
-                break
-        
-            if ini_found == 1:
-                text += aux
-        
-            if aux.find(ini) != -1:
-                ini_found = 1
+            while True:
+                # Read a line from input file.
+                aux = f.readline()
+                # In no line is read, end loop.
+                if not aux:
+                    break
+            
+                if aux.find(end) != -1 and ini_found == 1:
+                    break
+            
+                if ini_found == 1:
+                    text += aux
+            
+                if aux.find(ini) != -1:
+                    ini_found = 1
+
+        # Remove last intro in the file.
+        text = text[:-1:]
 
         return text
            
