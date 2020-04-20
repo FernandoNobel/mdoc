@@ -388,7 +388,19 @@ class ExecuteCodeFilter(Filter):
         @return: codeOut Output of the code.
         """
 
-        codeOut = 'Result 1+1=2'
+
+        code = code.split('\n')
+        code = ','.join(code)
+        code = '\"cd ' + path  +';' + code + ",exit;\""
+        code = 'matlab -nosplash -nodesktop -nodisplay -r ' + code
+        
+        ans = os.popen(code).read()
+        ans = ans.split('\n')
+        ans = ans[11:]
+        ans.pop()
+        ans = '\n'.join(ans)
+        
+        codeOut = ans
 
         return codeOut
         
