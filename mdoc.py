@@ -5,12 +5,12 @@ import re
 import io
 from abc import ABC, abstractmethod
 
-@click.command()
-@click.argument('input', type=click.File('r'))
-@click.argument('output', type=click.File('w'))
-@click.option('--no-exec', is_flag=True, help="Do not execute code.")
-@click.option('--intro', is_flag=True, help="Remove double intros.")
-def cli(input, output, no_exec, intro):
+class NaturalOrderGroup(click.Group):
+    def list_commands(self, ctx):
+        return self.commands.keys()
+
+@click.group(cls=NaturalOrderGroup)
+def cli():
     """MATLAB-DOCUMENTER
 
     This program parses the INPUT markdown file into the OUTPUT markdown file
@@ -22,6 +22,43 @@ def cli(input, output, no_exec, intro):
     Features of the parser:
     1. Include text from other file
     2. Execute code
+    3. Comment
+    4. Remove double intro
+    """
+
+@cli.command(short_help='Parse a file through the pipeline')
+@click.argument('input', type=click.File('r'))
+@click.argument('output', type=click.File('w'))
+@click.option('--no-exec', is_flag=True, help="Do not execute code.")
+@click.option('--intro', is_flag=True, help="Remove double intros.")
+def parse(input, output, no_exec, intro):
+    """ Parse a file though the pipeline
+    """
+    # Read all the file to process
+    data = input.read()
+
+    # Set up the pipeline of filters.
+    pipeline = Pipeline()
+
+    pipeline.addFilter( CommentFilter() )
+    pipeline.addFilter( IncludeFileFilter() )
+
+    if not no_exec:
+        pipeline.addFilter( ExecuteCodeFilter() )
+
+    if intro:
+        pipeline.addFilter( RemoveExtraIntroFilter() )
+
+    # Run the pipeline.
+    data = pipeline.run(data)
+
+    # Write data into out file.
+    output.write(data)
+    output.flush()
+
+@cli.command(short_help='Include file filter')
+def include():
+    """ Include file filter
 
     # INCLUDE TEXT FROM OTHER FILE
 
@@ -37,34 +74,36 @@ def cli(input, output, no_exec, intro):
     Will include only the text between the first appearance of "%% 1" and the
     next "%%".
     
+    """
+
+@cli.command(short_help='Execute code filter')
+def exec():
+    """ Execute code filter
+
+    # EXECUTE CODE
+
+    You can execute code and write the output of the execution.
+
+    \b
+    \t ``` LANGUAGE exec /path/to/workspace
+    \t [Code to be execute]
+    \t ```
 
     - Execute the code: \t ``` * exec /path/to/workplace
     """
-    # Read all the file to process
-    data = input.read()
 
-    # Set up the pipeline of filters.
-    pipeline = Pipeline()
+@cli.command(short_help='Comment filter')
+def comment():
+    """ Comment filter
+    """
 
-    pipeline.addFilter( CommentFilter() )
-    pipeline.addFilter( IncludeFileFilter() )
-    pipeline.addFilter( ExecuteCodeFilter() )
-
-    #if not no_exec:
-        #pipeline.addFilter( ExecuteCodeFilter() )
-
-    if intro:
-        pipeline.addFilter( RemoveExtraIntroFilter() )
-
-    # Run the pipeline.
-    data = pipeline.run(data)
-
-    # Write data into out file.
-    output.write(data)
-    output.flush()
+@cli.command(short_help='Remove double intros filter')
+def remove_intro():
+    """ Remove double intros filter
+    """
 
 class Pipeline:
-    """ PIPLINE
+    """ PIPELINE
 
     This class manages and set up all the filters we want to use in the
     pipeline.
@@ -404,52 +443,5 @@ class ExecuteCodeFilter(Filter):
 
         return codeOut
         
-    
-#class exec(Filter):
-#    def process(self,data):
-#        reg_ini = r'```(.*?)exec(.*?)\n'
-#        reg_end = r'```\n'
-#
-#        out_data = ''
-#        buf = io.StringIO(data)
-#        code = ''
-#
-#        while True:
-#            line = buf.readline()
-#            if not line:
-#                break
-#            out_data += line
-#
-#            searchObj = re.search(reg_ini,line,re.M|re.I)
-#            if searchObj:
-#                while True:
-#                    line = buf.readline()
-#                    out_data += line
-#                    if re.search(reg_end,line,re.M|re.I):
-#                        out_data += '``` ANS\n'
-#
-#                        code = code.split('\n')
-#                        code = ','.join(code)
-#                        code = '\"cd ' + searchObj.group(2) +';' + code + ",exit;\""
-#                        code = 'matlab -nosplash -nodesktop -nodisplay -r
-#                        ' + code
-#
-#                        ans = os.popen(code).read()
-#                        ans = ans.split('\n')
-#                        ans = ans[11:]
-#                        ans.pop()
-#                        ans = '\n'.join(ans)
-#
-#                        out_data += ans
-#
-#                        out_data += '```\n'
-#
-#                        break
-#
-#                    else:
-#                        code += line
-#
-#        return out_data
-
 if __name__ == '__main__':
     cli(obj={})
