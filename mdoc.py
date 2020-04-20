@@ -48,6 +48,7 @@ def cli(input, output, no_exec, intro):
 
     pipeline.addFilter( CommentFilter() )
     pipeline.addFilter( IncludeFileFilter() )
+    pipeline.addFilter( ExecuteCodeFilter() )
 
     #if not no_exec:
         #pipeline.addFilter( ExecuteCodeFilter() )
@@ -285,14 +286,121 @@ class CommentFilter(Filter):
         return data
 
     
-#class ExecuteCodeFilter(Filter):
+class ExecuteCodeFilter(Filter):
+    """ EXECUTECODEFILTER(FILTER)
+
+    Execute code and append the ouptut of the execution.
+    """
+    
+    def run(self,data):
+        """ RUN
+        @brief: Run the filter.
+        
+        @param: data Input text to process.
+                
+        @return: dataOut Output text processed.
+        """
+
+        # Set a buffer with the data to process.
+        buff = io.StringIO(data)
+
+        dataOut = ''
+        
+        while True:
+            # We process the data line per line.
+            line = buff.readline()
+
+            # If buff is ended, break the loop.
+            if not line:
+                break
+
+            # Save lines readed in dataOut.
+            dataOut += line
+
+            # Look for the start of a code to execute.
+            codeStart = self.searchReg(line, r'```(.*?)exec(.*?)\n')
+
+            if not codeStart:
+                continue
+
+            code = ''
+
+            # Read the code to execute.
+            if codeStart:
+                while True:
+                    line = buff.readline()
+                    if not line:
+                        break
+                    dataOut += line
+
+                    # Look for the end of code to execute.
+                    codeEnd = self.searchReg(line, r'```\n')
+
+                    if codeEnd:
+                        # Execute the code.
+                        language = codeStart.group(1)
+                        path = codeStart.group(2)
+
+                        codeOut = self.executeCode(code,language,path)
+                        dataOut += codeOut
+                        break
+                    else:
+                        code += line
+
+        return dataOut
+
+    def executeCode(self,code,language,path):
+        """ EXECUTECODE
+        @brief: Execute the code.
+        
+        @param: code Code to execute.
+              : language Code language (Matlab, python, etc)
+              : path Path to the folder where the code has to be executed.
+                
+        @return: codeOut Output of the code.
+        """
+
+        languages = {
+                'matlab':self.executeMatlabCode,
+                'MATLAB':self.executeMatlabCode,
+                'Matlab':self.executeMatlabCode
+                }
+
+        fnc = languages.get(
+            language[:-1], 
+            lambda code, path:'ERROR: Code language is not supported.'
+            )
+        
+        codeOut = '```\n'
+        codeOut += fnc(code,path)
+        codeOut += '\n```\n'
+
+        return codeOut
+
+                
+    def executeMatlabCode(self,code,path):
+        """ EXECUTEMATLABCODE
+        @brief: Execute matlab code.
+        
+        @param: code Code to execute.
+              : path Path to the workspace.
+                
+        @return: codeOut Output of the code.
+        """
+
+        codeOut = 'Result 1+1=2'
+
+        return codeOut
+        
+    
+#class exec(Filter):
 #    def process(self,data):
 #        reg_ini = r'```(.*?)exec(.*?)\n'
 #        reg_end = r'```\n'
 #
 #        out_data = ''
 #        buf = io.StringIO(data)
-#        cmd = ''
+#        code = ''
 #
 #        while True:
 #            line = buf.readline()
@@ -308,12 +416,13 @@ class CommentFilter(Filter):
 #                    if re.search(reg_end,line,re.M|re.I):
 #                        out_data += '``` ANS\n'
 #
-#                        cmd = cmd.split('\n')
-#                        cmd = ','.join(cmd)
-#                        cmd = '\"cd ' + searchObj.group(2) +';' + cmd + ",exit;\""
-#                        cmd = 'matlab -nosplash -nodesktop -nodisplay -r ' + cmd
+#                        code = code.split('\n')
+#                        code = ','.join(code)
+#                        code = '\"cd ' + searchObj.group(2) +';' + code + ",exit;\""
+#                        code = 'matlab -nosplash -nodesktop -nodisplay -r
+#                        ' + code
 #
-#                        ans = os.popen(cmd).read()
+#                        ans = os.popen(code).read()
 #                        ans = ans.split('\n')
 #                        ans = ans[11:]
 #                        ans.pop()
@@ -326,7 +435,7 @@ class CommentFilter(Filter):
 #                        break
 #
 #                    else:
-#                        cmd += line
+#                        code += line
 #
 #        return out_data
 
