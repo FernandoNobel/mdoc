@@ -79,6 +79,21 @@ def include(input,output):
     
     """
 
+    # Read all the file to process
+    data = input.read()
+
+    # Set up the pipeline of filters.
+    pipeline = Pipeline()
+
+    pipeline.addFilter( IncludeFileFilter() )
+
+    # Run the pipeline.
+    data = pipeline.run(data)
+
+    # Write data into out file.
+    output.write(data)
+    output.flush()
+
 @cli.command(short_help='Execute code filter')
 @click.argument('input', type=click.File('r'))
 @click.argument('output', type=click.File('w'))
@@ -98,13 +113,54 @@ def exec(input,output):
     - Execute the code: \t ``` * exec /path/to/workplace
     """
 
+    # Read all the file to process
+    data = input.read()
+
+    # Set up the pipeline of filters.
+    pipeline = Pipeline()
+
+    pipeline.addFilter( ExecuteCodeFilter() )
+
+    # Run the pipeline.
+    data = pipeline.run(data)
+
+    # Write data into out file.
+    output.write(data)
+    output.flush()
+
 @cli.command(short_help='Comment filter')
 @click.argument('input', type=click.File('r'))
 @click.argument('output', type=click.File('w'))
 def comment(input,output):
     """ Parse the INPUT file through the comment filter and generate the OUTPUT
     file
+
+    This filter removes all text between the "<!--" and "-->" marks. For
+    example:
+
+    \b
+    \tText to keep in the document.
+    \t<!--
+    \tTest to remove.
+    \tMore text to remove.
+    \t-->
+    \tText to also keep in the document.
     """
+
+    # Read all the file to process
+    data = input.read()
+
+    # Set up the pipeline of filters.
+    pipeline = Pipeline()
+
+    pipeline.addFilter( CommentFilter() )
+
+    # Run the pipeline.
+    data = pipeline.run(data)
+
+    # Write data into out file.
+    output.write(data)
+    output.flush()
 
 @cli.command(short_help='Remove double intros filter')
 @click.argument('input', type=click.File('r'))
@@ -112,7 +168,38 @@ def comment(input,output):
 def remove_intro(input,output):
     """ Parse the INPUT file through the remove double intros filter and
     generate the OUTPUT file
+
+    This filter removes extra intros in the document. For example:
+
+    \b
+    \tThe following text:
+
+    \t"This text has
+
+    \tdouble intros"
+
+    \twill become:
+
+    \b
+    \t"This text has
+    \tdouble intros"
+
     """
+
+    # Read all the file to process
+    data = input.read()
+
+    # Set up the pipeline of filters.
+    pipeline = Pipeline()
+
+    pipeline.addFilter( RemoveExtraIntroFilter() )
+
+    # Run the pipeline.
+    data = pipeline.run(data)
+
+    # Write data into out file.
+    output.write(data)
+    output.flush()
 
 class Pipeline:
     """ PIPELINE
