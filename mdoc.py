@@ -32,7 +32,7 @@ def cli():
 @click.option('--no-exec', is_flag=True, help="Do not execute code.")
 @click.option('--intro', is_flag=True, help="Remove double intros.")
 def parse(input, output, no_exec, intro):
-    """ Parse a file though the pipeline
+    """ Parse the INPUT file through the pipeline and generate the OUTPUT file
     """
     # Read all the file to process
     data = input.read()
@@ -57,8 +57,11 @@ def parse(input, output, no_exec, intro):
     output.flush()
 
 @cli.command(short_help='Include file filter')
-def include():
-    """ Include file filter
+@click.argument('input', type=click.File('r'))
+@click.argument('output', type=click.File('w'))
+def include(input,output):
+    """ Parse the INPUT file through the include filter and generate the OUTPUT
+    file
 
     # INCLUDE TEXT FROM OTHER FILE
 
@@ -77,8 +80,11 @@ def include():
     """
 
 @cli.command(short_help='Execute code filter')
-def exec():
-    """ Execute code filter
+@click.argument('input', type=click.File('r'))
+@click.argument('output', type=click.File('w'))
+def exec(input,output):
+    """ Parse the INPUT file through the execute code filter and generate the
+    OUTPUT file
 
     # EXECUTE CODE
 
@@ -93,13 +99,19 @@ def exec():
     """
 
 @cli.command(short_help='Comment filter')
-def comment():
-    """ Comment filter
+@click.argument('input', type=click.File('r'))
+@click.argument('output', type=click.File('w'))
+def comment(input,output):
+    """ Parse the INPUT file through the comment filter and generate the OUTPUT
+    file
     """
 
 @cli.command(short_help='Remove double intros filter')
-def remove_intro():
-    """ Remove double intros filter
+@click.argument('input', type=click.File('r'))
+@click.argument('output', type=click.File('w'))
+def remove_intro(input,output):
+    """ Parse the INPUT file through the remove double intros filter and
+    generate the OUTPUT file
     """
 
 class Pipeline:
