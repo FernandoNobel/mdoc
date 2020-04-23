@@ -43,8 +43,7 @@ def parse(input, output, no_exec, intro):
     pipeline.addFilter( CommentFilter() )
     pipeline.addFilter( IncludeFileFilter() )
 
-    if not no_exec:
-        pipeline.addFilter( ExecuteCodeFilter() )
+    pipeline.addFilter( ExecuteCodeFilter(no_exec) )
 
     if intro:
         pipeline.addFilter( RemoveExtraIntroFilter() )
@@ -106,11 +105,15 @@ def exec(input,output):
     You can execute code and write the output of the execution.
 
     \b
-    \t ``` LANGUAGE exec /path/to/workspace
+    \t ``` LANGUAGE exec [OPTIONS]
     \t [Code to be execute]
     \t ```
 
-    - Execute the code: \t ``` * exec /path/to/workplace
+    # OPTIONS
+
+    \b
+    --path /path/to/workspace \t Define the workspace path.
+    --no-echo \t Only return the result of the code without the code itself.
     """
 
     # Read all the file to process
@@ -429,6 +432,16 @@ class ExecuteCodeFilter(Filter):
 
     Execute code and append the ouptut of the execution.
     """
+
+    def __init__(self,no_exec):
+        """ __INIT__
+        @brief: Init of the ExecuteCodeFilter.
+        
+        @param: no_exec True if we dont want to execute code.
+        """
+
+        self.no_exec = no_exec
+        
     
     def run(self,data):
         """ RUN
@@ -478,9 +491,13 @@ class ExecuteCodeFilter(Filter):
                         # Execute the code.
                         language = codeStart.group(1)
                         path = codeStart.group(2)
+                        print(path)
 
-                        codeOut = self.executeCode(code,language,path)
-                        dataOut += codeOut
+                        # Check if we want to execute the code.
+                        if not self.no_exec:
+                            codeOut = self.executeCode(code,language,path)
+                            dataOut += codeOut
+
                         break
                     else:
                         code += line
