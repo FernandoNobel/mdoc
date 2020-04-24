@@ -113,7 +113,8 @@ def exec(input,output):
 
     \b
     --path /path/to/workspace \t Define the workspace path.
-    --no-echo \t Only return the result of the code without the code itself.
+    --no-code \t Do not return the code itself.
+    --no-echo \t Do not return the result of the code.
     """
 
     # Read all the file to process
@@ -465,13 +466,13 @@ class ExecuteCodeFilter(Filter):
             if not line:
                 break
 
-            # Save lines readed in dataOut.
-            dataOut += line
 
             # Look for the start of a code to execute.
             codeStart = self.searchReg(line, r'```(.*?)exec(.*?)\n')
 
             if not codeStart:
+                # Save lines readed in dataOut.
+                dataOut += line
                 continue
 
             code = ''
@@ -482,7 +483,7 @@ class ExecuteCodeFilter(Filter):
                     line = buff.readline()
                     if not line:
                         break
-                    dataOut += line
+                    #dataOut += line
 
                     # Look for the end of code to execute.
                     codeEnd = self.searchReg(line, r'```\n')
@@ -490,13 +491,10 @@ class ExecuteCodeFilter(Filter):
                     if codeEnd:
                         # Execute the code.
                         language = codeStart.group(1)
-                        path = codeStart.group(2)
-                        print(path)
+                        opts = codeStart.group(2).split()
 
-                        # Check if we want to execute the code.
-                        if not self.no_exec:
-                            codeOut = self.executeCode(code,language,path)
-                            dataOut += codeOut
+                        codeOut = self.executeCode(code,language,opts)
+                        dataOut += codeOut
 
                         break
                     else:
@@ -504,13 +502,13 @@ class ExecuteCodeFilter(Filter):
 
         return dataOut
 
-    def executeCode(self,code,language,path):
+    def executeCode(self,code,language,opts):
         """ EXECUTECODE
         @brief: Execute the code.
         
         @param: code Code to execute.
               : language Code language (Matlab, python, etc)
-              : path Path to the folder where the code has to be executed.
+              : opts Options for executing the code.
                 
         @return: codeOut Output of the code.
         """
@@ -523,36 +521,50 @@ class ExecuteCodeFilter(Filter):
 
         fnc = languages.get(
             language[:-1], 
-            lambda code, path:'ERROR: Code language is not supported.'
+            lambda code, opts:'ERROR: Code language is not supported.'
             )
         
-        codeOut = '```\n'
-        codeOut += fnc(code,path)
-        codeOut += '\n```\n'
+        codeOut = ''
+
+        if not '--no-code' in opts:
+            codeOut += '```'
+            codeOut += code
+            codeOut += '```\n\n'
+
+        # Check if we want to execute the code.
+        if not self.no_exec:
+            codeResult = fnc(code,opts)
+            if not '--no-echo' in opts:
+                codeOut += '```\n'
+                codeOut += codeResult
+                codeOut += '\n```\n'
 
         return codeOut
-
                 
-    def executeMatlabCode(self,code,path):
+    def executeMatlabCode(self,code,opts):
         """ EXECUTEMATLABCODE
         @brief: Execute matlab code.
         
         @param: code Code to execute.
-              : path Path to the workspace.
+              : opts Options for executing the code.
                 
         @return: codeOut Output of the code.
         """
 
-
         code = code.split('\n')
         code = ','.join(code)
-        code = '\"cd ' + path  +';' + code + ",exit;\""
+        if '--path' in opts:
+            code = '\"cd ' + opts[opts.index('--path')+1]  +';'+ code
+
+        code += ",exit;\""
         code = 'matlab -nosplash -nodesktop -nodisplay -r ' + code
         
+        print(code)  
         ans = os.popen(code).read()
         ans = ans.split('\n')
         ans = ans[11:]
-        ans.pop()
+        if ans:
+            ans.pop()
         ans = '\n'.join(ans)
         
         codeOut = ans
