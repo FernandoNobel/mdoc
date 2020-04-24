@@ -4,6 +4,8 @@ import os
 import re
 import io
 from abc import ABC, abstractmethod
+import subprocess
+import time
 
 class NaturalOrderGroup(click.Group):
     def list_commands(self, ctx):
@@ -96,7 +98,8 @@ def include(input,output):
 @cli.command(short_help='Execute code filter')
 @click.argument('input', type=click.File('r'))
 @click.argument('output', type=click.File('w'))
-def exec(input,output):
+@click.option('--no-exec', is_flag=True, help="Do not execute code.")
+def exec(input,output,no_exec):
     """ Parse the INPUT file through the execute code filter and generate the
     OUTPUT file
 
@@ -123,7 +126,7 @@ def exec(input,output):
     # Set up the pipeline of filters.
     pipeline = Pipeline()
 
-    pipeline.addFilter( ExecuteCodeFilter() )
+    pipeline.addFilter( ExecuteCodeFilter(no_exec) )
 
     # Run the pipeline.
     data = pipeline.run(data)
@@ -145,7 +148,7 @@ def comment(input,output):
     \b
     \tText to keep in the document.
     \t<!--
-    \tTest to remove.
+    \tText to remove.
     \tMore text to remove.
     \t-->
     \tText to also keep in the document.
@@ -442,6 +445,7 @@ class ExecuteCodeFilter(Filter):
         """
 
         self.no_exec = no_exec
+        self.matlabProcess = -1
         
     
     def run(self,data):
@@ -500,6 +504,9 @@ class ExecuteCodeFilter(Filter):
                     else:
                         code += line
 
+        if not self.matlabProcess == -1:
+            self.stopMatlabProcess()
+
         return dataOut
 
     def executeCode(self,code,language,opts):
@@ -540,7 +547,50 @@ class ExecuteCodeFilter(Filter):
                 codeOut += '\n```\n'
 
         return codeOut
+
+    def startMatlabProcess(self):
+        """ STARTMATLABPROCESS
+        @brief: Start MATLAB as a subprocess for executing code.
+        
+        @return: void
+        """
+
+        self.matlabProcess = subprocess.Popen(
+                args=['matlab', '-nosplash', '-nodesktop', '-nodisplay'],
+                stdin = subprocess.PIPE,
+                stdout = subprocess.PIPE,
+                encoding = 'utf8'
+                )
+
+        print('Waiting for Matlab to start')
+        
+        self.matlabProcess.stdin.write('disp(\"#########\")\n')
+        self.matlabProcess.stdin.flush()
+
+        while True:
+            line = self.matlabProcess.stdout.readline()
+            print(line,end='')
+            searchObj = re.search(r'>> #########',line,re.M|re.I)
+            if searchObj: 
+                break
+
+        print('MATLAB started')
                 
+    def stopMatlabProcess(self):
+        """ STOPMATLABPROCESS
+        @brief: Stop the MATLAB process.
+        
+        @return: void
+        """
+
+        print('Closing Matlab')
+
+        stdout_value = self.matlabProcess.communicate()[0]
+        print(stdout_value)
+
+        print('Matlab closed')
+        self.matlabProcess = -1       
+        
     def executeMatlabCode(self,code,opts):
         """ EXECUTEMATLABCODE
         @brief: Execute matlab code.
@@ -551,23 +601,41 @@ class ExecuteCodeFilter(Filter):
         @return: codeOut Output of the code.
         """
 
+        if self.matlabProcess == -1:
+            self.startMatlabProcess()
+
         code = code.split('\n')
         code = ','.join(code)
         if '--path' in opts:
-            code = '\"cd ' + opts[opts.index('--path')+1]  +';'+ code
+            code = 'cd ' + opts[opts.index('--path')+1]  +';'+ code
 
-        code += ",exit;\""
-        code = 'matlab -nosplash -nodesktop -nodisplay -r ' + code
-        
         print(code)  
-        ans = os.popen(code).read()
-        ans = ans.split('\n')
-        ans = ans[11:]
-        if ans:
-            ans.pop()
-        ans = '\n'.join(ans)
+
+        print('Send command to MATLAB')
+
+        self.matlabProcess.stdin.write(code+'\n')
+        self.matlabProcess.stdin.flush()
+
+        self.matlabProcess.stdin.write('disp(\"#########\")\n')
+        self.matlabProcess.stdin.flush()
+
+        print('Command output')
+
         
-        codeOut = ans
+        codeOut = ''
+        while True:
+            line = self.matlabProcess.stdout.readline()
+            print(line,end='')
+            searchObj = re.search(r'>> #########',line,re.M|re.I)
+            if searchObj: 
+                break
+            # Do not include the promt in the output of the command.
+            if not re.search(r'>>',line,re.M|re.I):
+                codeOut += line
+
+
+
+        print('End of command output')
 
         return codeOut
         
