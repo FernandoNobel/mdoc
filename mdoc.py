@@ -527,7 +527,7 @@ class ExecuteCodeFilter(Filter):
         codeOut = ''
 
         if not '--no-code' in opts:
-            codeOut += '```'
+            codeOut += '``` ' + language[:-1]
             codeOut += code
             codeOut += '```\n\n'
 
