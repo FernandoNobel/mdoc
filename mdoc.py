@@ -272,7 +272,7 @@ class Filter(ABC):
         @return: data Output text processed.
         """
 
-        print(self.__class__.__name__.upper())
+        print("\t=== " + self.__class__.__name__.upper()+ " ===")
         print("Start")
 
     @abstractmethod
@@ -647,8 +647,7 @@ class ExecuteCodeFilter(Filter):
             if not re.search(r'>>',line,re.M|re.I):
                 codeOut += line
 
-        if codeOut[-1] == '\n':
-            codeOut = codeOut[:-1]
+        codeOut = codeOut[:-2]
 
         print('End of command output')
 
