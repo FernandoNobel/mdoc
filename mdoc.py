@@ -633,7 +633,8 @@ class ExecuteCodeFilter(Filter):
             if not re.search(r'>>',line,re.M|re.I):
                 codeOut += line
 
-
+        if codeOut[-1] == '\n':
+            codeOut = codeOut[:-1]
 
         print('End of command output')
 
