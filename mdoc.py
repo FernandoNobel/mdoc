@@ -245,7 +245,9 @@ class Pipeline:
         # Run each filter.
         for f in self.filters:
             # Use the output of a filter as the input for the following one.
+            f.debugInfo()
             data = f.run(data)
+            print("Done")
 
         return data
 
@@ -260,6 +262,18 @@ class Filter(ABC):
         """
 
         super().__init__()
+
+    def debugInfo(self):
+        """ RUNWRAPPER
+        @brief: This mehtod wraps the run method and provides debug info.
+        
+        @param: data Input text to process.
+                
+        @return: data Output text processed.
+        """
+
+        print(self.__class__.__name__.upper())
+        print("Start")
 
     @abstractmethod
     def run(self,data):
@@ -562,14 +576,14 @@ class ExecuteCodeFilter(Filter):
                 encoding = 'utf8'
                 )
 
-        print('Waiting for Matlab to start')
+        print('Waiting for MATLAB to start')
         
         self.matlabProcess.stdin.write('disp(\"#########\")\n')
         self.matlabProcess.stdin.flush()
 
         while True:
             line = self.matlabProcess.stdout.readline()
-            print(line,end='')
+            # print(line,end='')
             searchObj = re.search(r'>> #########',line,re.M|re.I)
             if searchObj: 
                 break
@@ -586,7 +600,7 @@ class ExecuteCodeFilter(Filter):
         print('Closing Matlab')
 
         stdout_value = self.matlabProcess.communicate()[0]
-        print(stdout_value)
+        # print(stdout_value)
 
         print('Matlab closed')
         self.matlabProcess = -1       
@@ -609,8 +623,8 @@ class ExecuteCodeFilter(Filter):
         if '--path' in opts:
             code = 'cd ' + opts[opts.index('--path')+1]  +';'+ code
 
+        print('Code to execute in MATLAB:')
         print(code)  
-
         print('Send command to MATLAB')
 
         self.matlabProcess.stdin.write(code+'\n')
