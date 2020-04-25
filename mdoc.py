@@ -674,7 +674,9 @@ class TableOfContentsFilter(Filter):
 
         if searchObj:
             print("TOC found")
-            self.findTitles(data)
+            titles = self.findTitles(data)
+            toc = self.tocGithub(titles)
+            data = self.replaceReg(data,r'\[TOC\]',toc)
 
         return data
 
@@ -715,8 +717,28 @@ class TableOfContentsFilter(Filter):
             if h5:
                 titles = titles + ('5',h5.group(1))
         
-        print(titles)
         return titles
+
+    def tocGithub(self,titles):
+        """ TOCGITHUB
+        @brief: Creates a the table of contents with GitHub format.
+        
+        @param: titles List of titles.
+                
+        @return: toc String with the table of contents.
+        """
+
+        toc = ''
+
+        nTitles = int(len(titles)/2)
+        for i in range(nTitles):
+            for j in range(int(titles[2*i])-1):
+                toc += '\t'
+            toc += '* [' + titles[2*i+1] + ']'
+            toc += '(#' + titles[2*i+1].replace(' ','-').replace('.','').lower() + ')'
+            toc += '\n'
+
+        return toc
         
 if __name__ == '__main__':
     cli(obj={})
