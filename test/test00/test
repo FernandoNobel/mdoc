@@ -1,0 +1,9 @@
+#!/bin/bash
+
+python3 ../../mdoc.py parse test.mdoc test.md
+if diff test.md testAns.md; then
+  echo "Test okey!"
+  rm test.md
+else
+  echo "Error: test is not okey"
+fi
