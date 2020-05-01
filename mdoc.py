@@ -619,6 +619,23 @@ class ExecuteCodeFilter(Filter):
         if self.matlabProcess == -1:
             self.startMatlabProcess()
 
+        buff = io.StringIO(code)
+
+        code = ''
+
+        while True:
+            line = buff.readline()
+            if not line:
+                break
+            # Search for Matlab comments in the code to execute.
+            searchOb = self.searchReg(line, r'%(.*?)\n')
+            if not searchOb:
+                code += line
+                continue
+            # Remove the comments.
+            line = self.replaceReg(line,r'%(.*?)\n','')
+            code += line
+
         code = code.split('\n')
         code = ','.join(code)
         if '--path' in opts:
@@ -626,16 +643,6 @@ class ExecuteCodeFilter(Filter):
 
         print('Code to execute in MATLAB:')
         print(code)  
-
-        while True:
-            # Search for Matlab comments in the code to execute.
-            searchOb = self.searchReg(code, r'%(.*?),')
-            if not searchOb:
-                break
-            # Remove the comments.
-            code = self.replaceReg(code,r'%(.*?),','')
-
-        print(code)
         print('Send command to MATLAB')
 
         self.matlabProcess.stdin.write(code+'\n')
