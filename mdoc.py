@@ -558,9 +558,11 @@ class ExecuteCodeFilter(Filter):
         if not self.no_exec:
             codeResult = fnc(code,opts)
             if not '--no-echo' in opts:
-                codeOut += '```\n'
+                if not '--raw' in opts:
+                    codeOut += '```\n'
                 codeOut += codeResult
-                codeOut += '\n```\n'
+                if not '--raw' in opts:
+                    codeOut += '\n```\n'
 
         return codeOut
 
