@@ -538,7 +538,8 @@ class ExecuteCodeFilter(Filter):
         languages = {
                 'matlab':self.executeMatlabCode,
                 'MATLAB':self.executeMatlabCode,
-                'Matlab':self.executeMatlabCode
+                'Matlab':self.executeMatlabCode,
+                'sh':self.executeBashCode
                 }
 
         fnc = languages.get(
@@ -668,6 +669,39 @@ class ExecuteCodeFilter(Filter):
         codeOut = codeOut[:-2]
 
         print('End of command output')
+
+        return codeOut
+         
+    def executeBashCode(self,code,opts):
+        """ EXECUTEBASHCODE
+        @brief: Execute bash code.
+        
+        @param: code Code to execute.
+              : opts Options for executing the code.
+                
+        @return: codeOut Output of the code.
+        """
+
+        code = code.split('\n')
+        # Remove empty strings in the code
+        aux = []
+        for line in code:
+            if (line != ""):
+                aux.append(line)
+
+        code = aux
+
+        code = '&&'.join(code)
+
+        if '--path' in opts:
+            code = 'cd ' + opts[opts.index('--path')+1]  +'&&'+ code
+
+        print('Code to execute in the shell:')
+        print(code)  
+
+        ans = os.popen(code).read()
+
+        codeOut = ans
 
         return codeOut
         
