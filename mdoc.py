@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
 import click
-import os
-import re
-import io
-from abc import ABC, abstractmethod
-import subprocess
-import time
 
 from Pipeline import Pipeline
 from Filter import Filter
