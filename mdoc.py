@@ -65,7 +65,7 @@ def include(input,output):
     """ Parse the INPUT file through the include filter and generate the OUTPUT
     file
 
-    # INCLUDE TEXT FROM OTHER FILE
+    INCLUDE TEXT FROM OTHER FILE
 
     You can include text from other file. 
 
@@ -104,7 +104,7 @@ def exec(input,output,no_exec):
     """ Parse the INPUT file through the execute code filter and generate the
     OUTPUT file
 
-    # EXECUTE CODE
+    EXECUTE CODE
 
     You can execute code and write the output of the execution.
 
@@ -113,7 +113,7 @@ def exec(input,output,no_exec):
     \t [Code to be execute]
     \t ```
 
-    # OPTIONS
+    OPTIONS
 
     \b
     --path /path/to/workspace \t Define the workspace path.

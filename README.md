@@ -32,7 +32,7 @@ For more information please contact fersann1@upv.es
 
 ## Include text filter
 
-  # INCLUDE TEXT FROM OTHER FILE
+  INCLUDE TEXT FROM OTHER FILE
 
   You can include text from other file.
 
@@ -48,7 +48,7 @@ For more information please contact fersann1@upv.es
 
 ## Execute code filter
 
-  # EXECUTE CODE
+  EXECUTE CODE
 
   You can execute code and write the output of the execution.
 
@@ -56,7 +56,7 @@ For more information please contact fersann1@upv.es
        [Code to be execute]
        ```
 
-  # OPTIONS
+  OPTIONS
 
   --path /path/to/workspace    Define the workspace path.
   --no-code    Do not return the code itself.
