@@ -462,7 +462,7 @@ class ExecuteCodeFilter(Filter):
 
         self.no_exec = no_exec
         self.matlabProcess = -1
-        
+        self.workspacePath = os.getcwd()
     
     def run(self,data):
         """ RUN
@@ -555,6 +555,10 @@ class ExecuteCodeFilter(Filter):
             codeOut += code
             codeOut += '```\n\n'
 
+        # Change workspace path to the one needed for the command.
+        if '--path' in opts:
+            os.chdir(opts[opts.index('--path')+1])
+
         # Check if we want to execute the code.
         if not self.no_exec:
             codeResult = fnc(code,opts)
@@ -564,6 +568,9 @@ class ExecuteCodeFilter(Filter):
                 codeOut += codeResult
                 if not '--raw' in opts:
                     codeOut += '\n```\n'
+    
+        # Change workspace path to the original.
+        os.chdir(self.workspacePath)
 
         return codeOut
 
@@ -695,9 +702,6 @@ class ExecuteCodeFilter(Filter):
         code = aux
 
         code = '&&'.join(code)
-
-        if '--path' in opts:
-            code = 'cd ' + opts[opts.index('--path')+1]  +'&&'+ code
 
         print('Code to execute in the shell:')
         print(code)  

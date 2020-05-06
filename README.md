@@ -61,6 +61,7 @@ For more information please contact fersann1@upv.es
   --path /path/to/workspace    Define the workspace path.
   --no-code    Do not return the code itself.
   --no-echo    Do not return the result of the code.
+  --raw        Print the output of the command as it is, without the ```
 
 
 ## Comment filter
