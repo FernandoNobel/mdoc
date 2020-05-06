@@ -649,8 +649,10 @@ class ExecuteCodeFilter(Filter):
 
         code = code.split('\n')
         code = ','.join(code)
-        if '--path' in opts:
-            code = 'cd ' + opts[opts.index('--path')+1]  +';'+ code
+
+        # We dont need to change the path anymore.
+        #if '--path' in opts:
+            #code = 'cd ' + opts[opts.index('--path')+1]  +';'+ code
 
         print('Code to execute in MATLAB:')
         print(code)  
