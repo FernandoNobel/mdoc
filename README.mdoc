@@ -2,7 +2,7 @@ Markdown Documenter (mdoc)
 ==========================
 
 ```sh exec --no-code --raw
-python3 mdoc.py
+python3 mdoc.py --help | sed 1,4d | head -n -10
 ```
 
 For more information please contact fersann1@upv.es
@@ -19,23 +19,23 @@ For more information please contact fersann1@upv.es
 ## Include text filter
 
 ```sh exec --no-code --raw
-python3 mdoc.py include --help
+python3 mdoc.py include --help | sed 1,5d | head -n -3
 ```
 
 ## Execute code filter
 
 ```sh exec --no-code --raw
-python3 mdoc.py exec --help
+python3 mdoc.py exec --help | sed 1,5d | head -n -3
 ```
 
 ## Comment filter
 
 ```sh exec --no-code --raw
-python3 mdoc.py comment --help
+python3 mdoc.py comment --help | sed 1,5d | head -n -3
 ```
 
 ## Remove double intro filter
 
 ```sh exec --no-code --raw
-python3 mdoc.py remove-intro --help
+python3 mdoc.py remove-intro --help | sed 1,5d | head -n -3
 ```
