@@ -119,6 +119,7 @@ def exec(input,output,no_exec):
     --path /path/to/workspace \t Define the workspace path.
     --no-code \t Do not return the code itself.
     --no-echo \t Do not return the result of the code.
+    --raw \t Print the output of the command as it is, without the ```
     """
 
     # Read all the file to process
