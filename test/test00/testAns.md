@@ -1,6 +1,7 @@
 * [Include a file](#include-a-file)
 * [Include part of a file](#include-part-of-a-file)
 * [Code matlab](#code-matlab)
+* [Bash command](#bash-command)
 
 
 # Include a file
@@ -32,3 +33,6 @@ ans =
 
      2
 ```
+# Bash command
+
+Hola
