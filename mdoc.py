@@ -60,23 +60,21 @@ def parse(input, output, no_exec, intro):
     output.write(data)
     output.flush()
 
-@cli.command(short_help='Include file filter')
+@cli.command(short_help='Include text filter')
 @click.argument('input', type=click.File('r'))
 @click.argument('output', type=click.File('w'))
 def include(input,output):
-    """ Parse the INPUT file through the include filter and generate the OUTPUT
-    file
+    """ Parse the INPUT file through the include text filter and generate the 
+    OUTPUT file
 
-    INCLUDE TEXT FROM OTHER FILE
-
-    You can include text from other file. 
+    This filter includes text from other file. 
 
     \t @[ini,end](/path/to/file)
 
     With "ini" and "end" options you can specify to only include a part of the
     text to include. For example,
 
-    @[ini:%% 1,end=%%](./myMatlab.m)
+    \t @[ini:%% 1,end=%%](./myMatlab.m)
 
     Will include only the text between the first appearance of "%% 1" and the
     next "%%".
@@ -106,22 +104,41 @@ def exec(input,output,no_exec):
     """ Parse the INPUT file through the execute code filter and generate the
     OUTPUT file
 
-    EXECUTE CODE
-
-    You can execute code and write the output of the execution.
+    This filter executes code and write the output of the execution in the file.
 
     \b
-    \t ``` LANGUAGE exec [OPTIONS]
+    \t ```LANGUAGE exec [OPTIONS]
     \t [Code to be execute]
+    \t ```
+
+    Where LANGUAGE is the programming language of the code. Currently only
+    MATLAB and BASH code are supported. 
+
+    Pro Tip: you can execute python code if you execute like a bash command:
+
+    \b
+    \t ```sh exec
+    \t python3 myPythonProgramm.py
     \t ```
 
     OPTIONS
 
     \b
-    --path /path/to/workspace \t Define the workspace path.
-    --no-code \t Do not return the code itself.
-    --no-echo \t Do not return the result of the code.
-    --raw \t Print the output of the command as it is, without the ```
+    \t --path /path/to/workspace 
+    \t\t\t Define the workspace path.
+    \t --no-code \t Do not return the code itself.
+    \t --no-echo \t Do not return the result of the code.
+    \t --raw \t\t Print the output of the command as it is, without the ```
+
+    For example:
+
+    \b
+    \t ```sh exec --no-code --path /home/user/path/to/folder --raw
+    \t ls
+    \t ```
+
+    This will print the contents of /home/user/path/to/folder as plain text
+    without the code.
     """
 
     # Read all the file to process
@@ -156,6 +173,12 @@ def comment(input,output):
     \tMore text to remove.
     \t-->
     \tText to also keep in the document.
+
+    , will become:
+
+    \b
+    \tText to keep in the document.
+    \tText to also keep in the document.
     """
 
     # Read all the file to process
@@ -189,7 +212,7 @@ def remove_intro(input,output):
 
     \tdouble intros"
 
-    \twill become:
+    , will become:
 
     \b
     \t"This text has

@@ -32,36 +32,52 @@ For more information please contact fersann1@upv.es
 
 ## Include text filter
 
-  INCLUDE TEXT FROM OTHER FILE
-
-  You can include text from other file.
+  This filter includes text from other file.
 
        @[ini,end](/path/to/file)
 
   With "ini" and "end" options you can specify to only include a part of the
   text to include. For example,
 
-  @[ini:%% 1,end=%%](./myMatlab.m)
+       @[ini:%% 1,end=%%](./myMatlab.m)
 
   Will include only the text between the first appearance of "%% 1" and the
   next "%%".
 
 ## Execute code filter
 
-  EXECUTE CODE
+  This filter executes code and write the output of the execution in the
+  file.
 
-  You can execute code and write the output of the execution.
-
-       ``` LANGUAGE exec [OPTIONS]
+       ```LANGUAGE exec [OPTIONS]
        [Code to be execute]
+       ```
+
+  Where LANGUAGE is the programming language of the code. Currently only
+  MATLAB and BASH code are supported.
+
+  Pro Tip: you can execute python code if you execute like a bash command:
+
+       ```sh exec
+       python3 myPythonProgramm.py
        ```
 
   OPTIONS
 
-  --path /path/to/workspace    Define the workspace path.
-  --no-code    Do not return the code itself.
-  --no-echo    Do not return the result of the code.
-  --raw        Print the output of the command as it is, without the ```
+       --path /path/to/workspace 
+                       Define the workspace path.
+       --no-code       Do not return the code itself.
+       --no-echo       Do not return the result of the code.
+       --raw           Print the output of the command as it is, without the ```
+
+  For example:
+
+       ```sh exec --no-code --path /home/user/path/to/folder --raw
+       ls
+       ```
+
+  This will print the contents of /home/user/path/to/folder as plain text
+  without the code.
 
 
 ## Comment filter
@@ -76,6 +92,11 @@ For more information please contact fersann1@upv.es
       -->
       Text to also keep in the document.
 
+  , will become:
+
+      Text to keep in the document.
+      Text to also keep in the document.
+
 ## Remove double intro filter
 
   This filter removes extra intros in the document. For example:
@@ -86,7 +107,7 @@ For more information please contact fersann1@upv.es
 
       double intros"
 
-      will become:
+  , will become:
 
       "This text has
       double intros"
