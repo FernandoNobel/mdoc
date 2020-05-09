@@ -1,6 +1,6 @@
 #!/bin/bash
 
-python3 ../../mdoc.py parse test.mdoc test.md
+python3 ../../mdoc.py parse test.mdoc -m
 if diff test.md testAns.md; then
   echo "Test okey!"
   rm test.md
