@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import click
+import os
 
 from Pipeline import Pipeline
 from Filter import Filter
@@ -32,13 +33,14 @@ def cli():
 
 @cli.command(short_help='Parse a file through the pipeline')
 @click.argument('input', type=click.File('r'))
-@click.argument('output', type=click.File('w'))
+@click.option('-o','--output', type=click.File('w'), help="Name of the output file.")
 @click.option('--no-exec', is_flag=True, help="Do not execute code.")
 @click.option('--intro', is_flag=True, help="Remove double intros.")
-def parse(input, output, no_exec, intro):
+@click.option('-m','--md', is_flag=True, help="Output a markdown file.")
+def parse(input, output, no_exec, intro, md):
     """ Parse the INPUT file through the pipeline and generate the OUTPUT file
     """
-    # Read all the file to process
+    # Read all the file to process.
     data = input.read()
 
     # Set up the pipeline of filters.
@@ -56,9 +58,18 @@ def parse(input, output, no_exec, intro):
     # Run the pipeline.
     data = pipeline.run(data)
 
-    # Write data into out file.
-    output.write(data)
-    output.flush()
+    # If markdown flag is used, output the file as a originalName.md.
+    if md:
+        defaultName = os.path.splitext(input.name)[0] + '.md'
+        output = open(defaultName,'w')
+
+    if output:
+        # Write data into out file.
+        output.write(data)
+        output.flush()
+        return
+
+    print(data)
 
 @cli.command(short_help='Include text filter')
 @click.argument('input', type=click.File('r'))
