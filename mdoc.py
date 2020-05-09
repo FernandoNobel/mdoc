@@ -33,12 +33,25 @@ def cli():
 
 @cli.command(short_help='Parse a file through the pipeline')
 @click.argument('input', type=click.File('r'))
-@click.option('-o','--output', type=click.File('w'), help="Name of the output file.")
+@click.option('-o','--output', type=click.File('w'), help="Generate an output file.")
+@click.option('-m','--md', is_flag=True, help="Output a markdown file.")
 @click.option('--no-exec', is_flag=True, help="Do not execute code.")
 @click.option('--intro', is_flag=True, help="Remove double intros.")
-@click.option('-m','--md', is_flag=True, help="Output a markdown file.")
-def parse(input, output, no_exec, intro, md):
-    """ Parse the INPUT file through the pipeline and generate the OUTPUT file
+def parse(input, output, md, no_exec, intro):
+    """ Parse the INPUT file through the pipeline and show the result in the
+    stdout. There are options (-o, --md) for creating output 
+    files with the result.
+
+    The pipeline is set by the following filters:
+
+    \b
+    \t 1. Comment filter
+    \t 2. Include file filter
+    \t 3. Table of contents filter
+    \t 4. Execute code filter
+
+    The input file is first processed by the first filter, the output of that
+    filter is used as an input for the second filter and so on.
     """
     # Read all the file to process.
     data = input.read()
@@ -246,8 +259,45 @@ def remove_intro(input,output):
     output.write(data)
     output.flush()
           
-   
-       
+@cli.command(short_help='Create a table of contents')
+@click.argument('input', type=click.File('r'))
+@click.argument('output', type=click.File('w'))
+def toc(input,output):
+    """ Parse the INPUT file through the table of contents filter and
+    generate the OUTPUT file
+
+    This filter creates a table of contents from the headers defined in markdown
+    style.
+
+    To include a table of contents in your code you have to add:
+
+    \t [TOC]
+
+    , then it will search all the headers and subheaders and it will produce
+    something like this:
+
+    \b
+    \t * [Introduction](#introduction)
+    \t * [Table of contents](#table-of-contents)
+    \t * [Installation](#installation)
+    \t \t * [System requirement](#system-requirement)
+    \t * [Usage](#usage)
+    """
+
+    # Read all the file to process
+    data = input.read()
+
+    # Set up the pipeline of filters.
+    pipeline = Pipeline()
+
+    pipeline.addFilter( TableOfContentsFilter() )
+
+    # Run the pipeline.
+    data = pipeline.run(data)
+
+    # Write data into out file.
+    output.write(data)
+    output.flush()
        
 if __name__ == '__main__':
     cli(obj={})

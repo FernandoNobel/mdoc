@@ -12,6 +12,7 @@ Markdown Documenter (mdoc)
   3. Comment
   4. Remove double intro
 
+
 For more information please contact fersann1@upv.es
 
 # Installation
@@ -21,11 +22,30 @@ For more information please contact fersann1@upv.es
 
 * [Installation](#installation)
 * [Table of contents](#table-of-contents)
+* [Parse](#parse)
 * [Filters](#filters)
 	* [Include text filter](#include-text-filter)
 	* [Execute code filter](#execute-code-filter)
 	* [Comment filter](#comment-filter)
 	* [Remove double intro filter](#remove-double-intro-filter)
+	* [Table of contents filter](#table-of-contents-filter)
+
+
+# Parse
+
+  Parse the INPUT file through the pipeline and show the result in the
+  stdout. There are options (-o, --md) for creating output  files with the
+  result.
+
+  The pipeline is set by the following filters:
+
+       1. Comment filter
+       2. Include file filter
+       3. Table of contents filter
+       4. Execute code filter
+
+  The input file is first processed by the first filter, the output of that
+  filter is used as an input for the second filter and so on.
 
 
 # Filters
@@ -111,3 +131,21 @@ For more information please contact fersann1@upv.es
 
       "This text has
       double intros"
+
+## Table of contents filter
+
+  This filter creates a table of contents from the headers defined in
+  markdown style.
+
+  To include a table of contents in your code you have to add:
+
+       [TOC]
+
+  , then it will search all the headers and subheaders and it will produce
+  something like this:
+
+       * [Introduction](#introduction)
+       * [Table of contents](#table-of-contents)
+       * [Installation](#installation)
+               * [System requirement](#system-requirement)
+       * [Usage](#usage)
