@@ -70,8 +70,19 @@ class IncludeFileFilter(Filter):
                 if aux.find(ini) != -1:
                     ini_found = 1
 
-        # Remove last intro in the file.
-        text = text[:-1:]
+        # Remove all the intros in the start of the file.
+        while True:
+            if text[1] == '\n':
+                text = text[:1:]
+            else:
+                break
+
+        # Remove all the intros in the end of the file.
+        while True:
+            if text[-1] == '\n':
+                text = text[:-1:]
+            else:
+                break
 
         return text
  
