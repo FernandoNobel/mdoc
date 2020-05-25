@@ -24,7 +24,8 @@ Text section 1.
 
 # Code matlab
 
-``` MATLAB1+1
+```MATLAB
+1+1
 ```
 
 ```

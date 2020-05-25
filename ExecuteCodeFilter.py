@@ -18,7 +18,7 @@ class ExecuteCodeFilter(Filter):
         """
 
         self.no_exec = no_exec
-        self.matlabProcess = -1
+        self.matlabProcess = -1 # -1 if process is shutdown.
         self.workspacePath = os.getcwd()
     
     def run(self,data):
@@ -108,7 +108,7 @@ class ExecuteCodeFilter(Filter):
         codeOut = ''
 
         if not '--no-code' in opts:
-            codeOut += '``` ' + language[:-1]
+            codeOut += '```' + language[:-1] + '\n'
             codeOut += code
             codeOut += '```\n\n'
 
