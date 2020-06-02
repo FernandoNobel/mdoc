@@ -188,8 +188,17 @@ class ExecuteCodeFilter(Filter):
             self.startMatlabProcess()
 
         buff = io.StringIO(code)
-
         code = ''
+
+        # Matlab is executed as a process that is reused in each execution.
+        # So the code in executeCode only works one time to change the path.
+        # Therefore it is necesary to change the path if needed.
+        if '--path' in opts:
+            os.chdir(self.workspacePath)
+            pathRelative = opts[opts.index('--path')+1]
+            pathAbsolute = os.path.abspath(pathRelative)
+
+            code = code + "cd %s," % pathAbsolute
 
         while True:
             line = buff.readline()
