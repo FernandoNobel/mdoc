@@ -40,6 +40,11 @@ class IncludeFileFilter(Filter):
         opts = opts.replace('=',',')
         opts = opts.split(",")
 
+        i = 0
+        while i < len(opts):
+            opts[i] = opts[i].strip()
+            i += 1
+
         filepath = searchObj.group(2)
 
         f = open(filepath,'r')
