@@ -86,10 +86,11 @@ def parse(input, output, md, no_exec, intro):
 
 @cli.command(short_help='Parse all the .mdoc files in the path provided.')
 @click.argument('path',  type=click.Path(exists=True))
+@click.option('-r','--recursive', is_flag=True, help="Find .mdoc recursively in the path.")
 @click.option('--no-exec', is_flag=True, help="Do not execute code.")
 @click.option('--intro', is_flag=True, help="Remove double intros.")
 @click.pass_context
-def make(ctx, path, no_exec, intro):
+def make(ctx, path, recursive, no_exec, intro):
     """ Parse all the .mdoc files present in the PATH through the pipeline into
     .md files.
 
@@ -109,15 +110,19 @@ def make(ctx, path, no_exec, intro):
     os.chdir(path)
 
     # Get all the .mdoc files to parse.
-    files = []
-    for file in glob.glob("*.mdoc"):
-        files.append(file)
+    if recursive:
+        files = glob.glob('./**/*.mdoc', recursive = True)
+    else:
+        files = glob.glob('./*.mdoc', recursive = False)
 
     print(files)
 
     # Execute parse for all files.
     for file in files:
-        ctx.invoke(parse, input = open(file,'r'), output = False, md = True, no_exec = no_exec, intro = intro)
+        os.chdir(os.path.dirname(file))
+        fd = open(os.path.basename(file),'r')
+        ctx.invoke(parse, input = fd, output = False, md = True, no_exec = no_exec, intro = intro)
+        os.chdir(path)
 
 @cli.command(short_help='Include text filter')
 @click.argument('input', type=click.File('r'))
