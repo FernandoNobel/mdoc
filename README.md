@@ -12,6 +12,7 @@ Markdown Documenter (mdoc)
   3. Comment
   4. Remove double intro
 
+Options:
 
 For more information please contact fersann1@upv.es
 
@@ -34,7 +35,7 @@ For more information please contact fersann1@upv.es
 # Parse
 
   Parse the INPUT file through the pipeline and show the result in the
-  stdout. There are options (-o, --md) for creating output  files with the
+  stdout. There are options (-o, --md) for creating output files with the
   result.
 
   The pipeline is set by the following filters:

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import click
 import os
+import glob # For searching files in path.
 
 from Pipeline import Pipeline
 from Filter import Filter
@@ -82,6 +83,41 @@ def parse(input, output, md, no_exec, intro):
         return
 
     print(data)
+
+@cli.command(short_help='Parse all the .mdoc files in the path provided.')
+@click.argument('path',  type=click.Path(exists=True))
+@click.option('--no-exec', is_flag=True, help="Do not execute code.")
+@click.option('--intro', is_flag=True, help="Remove double intros.")
+@click.pass_context
+def make(ctx, path, no_exec, intro):
+    """ Parse all the .mdoc files present in the PATH through the pipeline into
+    .md files.
+
+    The pipeline is set by the following filters:
+
+    \b
+    \t 1. Comment filter
+    \t 2. Include file filter
+    \t 3. Table of contents filter
+    \t 4. Execute code filter
+
+    The files are first processed by the first filter, the output of that
+    filter is used as an input for the second filter and so on.
+    """
+
+    # Move to the path chosed by user.
+    os.chdir(path)
+
+    # Get all the .mdoc files to parse.
+    files = []
+    for file in glob.glob("*.mdoc"):
+        files.append(file)
+
+    print(files)
+
+    # Execute parse for all files.
+    for file in files:
+        ctx.invoke(parse, input = open(file,'r'), output = False, md = True, no_exec = no_exec, intro = intro)
 
 @cli.command(short_help='Include text filter')
 @click.argument('input', type=click.File('r'))
