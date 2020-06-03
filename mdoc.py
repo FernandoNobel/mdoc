@@ -106,6 +106,9 @@ def make(ctx, path, recursive, no_exec, intro):
     filter is used as an input for the second filter and so on.
     """
 
+    # Get the absolute path to avoid problems with relatives ones.
+    path = os.path.abspath(path)
+
     # Move to the path chosed by user.
     os.chdir(path)
 
@@ -115,13 +118,21 @@ def make(ctx, path, recursive, no_exec, intro):
     else:
         files = glob.glob('./*.mdoc', recursive = False)
 
+
+    print('Files to be parsed:')
     print(files)
 
     # Execute parse for all files.
     for file in files:
+        print('Parsing %s' % file)
+
+        # Change chdir to the one needed for the parse command.
         os.chdir(os.path.dirname(file))
+
         fd = open(os.path.basename(file),'r')
         ctx.invoke(parse, input = fd, output = False, md = True, no_exec = no_exec, intro = intro)
+
+        # Change back the chdir to the main one.
         os.chdir(path)
 
 @cli.command(short_help='Include text filter')
