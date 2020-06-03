@@ -39,8 +39,7 @@ def cli():
 @click.option('--intro', is_flag=True, help="Remove double intros.")
 def parse(input, output, md, no_exec, intro):
     """ Parse the INPUT file through the pipeline and show the result in the
-    stdout. There are options (-o, --md) for creating output 
-    files with the result.
+    stdout. There are options (-o, --md) for creating output files with the result.
 
     The pipeline is set by the following filters:
 
