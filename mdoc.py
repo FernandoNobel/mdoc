@@ -2,6 +2,7 @@
 import click
 import os
 import glob # For searching files in path.
+import re
 
 from Pipeline import Pipeline
 from Filter import Filter
@@ -89,8 +90,9 @@ def parse(input, output, md, no_exec, intro):
 @click.option('-r','--recursive', is_flag=True, help="Find .mdoc recursively in the path.")
 @click.option('--no-exec', is_flag=True, help="Do not execute code.")
 @click.option('--intro', is_flag=True, help="Remove double intros.")
+@click.option('-e','--exclude', help="Exclude the files from making.", multiple=True)
 @click.pass_context
-def make(ctx, path, recursive, no_exec, intro):
+def make(ctx, path, recursive, no_exec, intro, exclude):
     """ Parse all the .mdoc files present in the PATH through the pipeline into
     .md files.
 
@@ -118,6 +120,21 @@ def make(ctx, path, recursive, no_exec, intro):
     else:
         files = glob.glob('./*.mdoc', recursive = False)
 
+
+    # Remove exclude files from being processed.
+    for expr in exclude:
+        print(expr)
+        pattern = re.compile(expr)
+
+        result = []
+
+        for file in files:
+            filename = os.path.basename(file)
+
+            if not pattern.match(filename):
+                result.append(file)
+
+        files = result
 
     print('Files to be parsed:')
     print(files)
