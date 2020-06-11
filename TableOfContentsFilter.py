@@ -20,7 +20,7 @@ class TableOfContentsFilter(Filter):
         searchObj = self.searchReg(data,r'\[TOC\]')
 
         if searchObj:
-            print("TOC found")
+            self.verbosePrint("TOC found")
             titles = self.findTitles(data)
             toc = self.tocGithub(titles)
             data = self.replaceReg(data,r'\[TOC\]',toc)

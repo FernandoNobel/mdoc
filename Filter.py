@@ -6,12 +6,27 @@ class Filter(ABC):
 
     Abstract filter class.
     """
-    def __init__(self):
+    def __init__(self,opts):
         """
         @brief: Constructor of Filter class.
+        
+        @params: opts General options from the execution of mdoc.
         """
 
         super().__init__()
+        self.opts = opts
+
+    def verbosePrint(self,string, end='\n'):
+        """ VERBOSEPRINT
+        @brief: Prints to the terminal only if the verbose flag is set.
+        
+        @param: string String to print.
+                
+        @return: void
+        """
+
+        if self.opts[self.opts.index("verbose")+1]:
+            print(string,end=end)
 
     def debugInfo(self):
         """ RUNWRAPPER
@@ -22,8 +37,8 @@ class Filter(ABC):
         @return: data Output text processed.
         """
 
-        print("\t=== " + self.__class__.__name__.upper()+ " ===")
-        print("Start")
+        self.verbosePrint("\t=== " + self.__class__.__name__.upper()+ " ===")
+        self.verbosePrint("Start")
 
     @abstractmethod
     def run(self,data):

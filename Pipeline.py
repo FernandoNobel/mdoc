@@ -37,6 +37,6 @@ class Pipeline:
             # Use the output of a filter as the input for the following one.
             f.debugInfo()
             data = f.run(data)
-            print("Done")
+            f.verbosePrint("Done")
 
         return data

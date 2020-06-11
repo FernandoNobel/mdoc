@@ -39,7 +39,8 @@ def cli():
 @click.option('-m','--md', is_flag=True, help="Output a markdown file.")
 @click.option('--no-exec', is_flag=True, help="Do not execute code.")
 @click.option('--intro', is_flag=True, help="Remove double intros.")
-def parse(input, output, md, no_exec, intro):
+@click.option('-v','--verbose', is_flag=True, help="Verbose output.")
+def parse(input, output, md, no_exec, intro, verbose):
     """ Parse the INPUT file through the pipeline and show the result in the
     stdout. There are options (-o, --md) for creating output files with the result.
 
@@ -54,20 +55,26 @@ def parse(input, output, md, no_exec, intro):
     The input file is first processed by the first filter, the output of that
     filter is used as an input for the second filter and so on.
     """
+    # Prepare the options to pass for the filters.
+    opts = [
+            'no_exec', no_exec,
+            'verbose', verbose
+            ]
+
     # Read all the file to process.
     data = input.read()
 
     # Set up the pipeline of filters.
     pipeline = Pipeline()
 
-    pipeline.addFilter( CommentFilter() )
-    pipeline.addFilter( IncludeFileFilter() )
-    pipeline.addFilter( TableOfContentsFilter() )
+    pipeline.addFilter( CommentFilter(opts) )
+    pipeline.addFilter( IncludeFileFilter(opts) )
+    pipeline.addFilter( TableOfContentsFilter(opts) )
 
-    pipeline.addFilter( ExecuteCodeFilter(no_exec) )
+    pipeline.addFilter( ExecuteCodeFilter(opts) )
 
     if intro:
-        pipeline.addFilter( RemoveExtraIntroFilter() )
+        pipeline.addFilter( RemoveExtraIntroFilter(opts) )
 
     # Run the pipeline.
     data = pipeline.run(data)
@@ -147,7 +154,8 @@ def make(ctx, path, recursive, no_exec, intro, exclude):
         os.chdir(os.path.dirname(file))
 
         fd = open(os.path.basename(file),'r')
-        ctx.invoke(parse, input = fd, output = False, md = True, no_exec = no_exec, intro = intro)
+        ctx.invoke(parse, input = fd, output = False, md = True, no_exec
+                = no_exec, intro = intro, verbose = True)
 
         # Change back the chdir to the main one.
         os.chdir(path)

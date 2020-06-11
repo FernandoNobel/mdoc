@@ -10,14 +10,14 @@ class ExecuteCodeFilter(Filter):
     Execute code and append the ouptut of the execution.
     """
 
-    def __init__(self,no_exec):
+    def __init__(self,opts):
         """ __INIT__
         @brief: Init of the ExecuteCodeFilter.
-        
-        @param: no_exec True if we dont want to execute code.
+
+        @params: opts General options from the execution of mdoc.
         """
 
-        self.no_exec = no_exec
+        super().__init__(opts)
         self.matlabProcess = -1 # -1 if process is shutdown.
         self.workspacePath = os.getcwd()
     
@@ -68,9 +68,11 @@ class ExecuteCodeFilter(Filter):
                     if codeEnd:
                         # Execute the code.
                         language = codeStart.group(1)
+                        # Local options extracted from the file.
                         opts = codeStart.group(2).split()
 
-                        codeOut = self.executeCode(code,language,opts)
+                        # Combine both local and global options. 
+                        codeOut = self.executeCode(code,language,opts+self.opts)
                         dataOut += codeOut
 
                         break
@@ -117,7 +119,8 @@ class ExecuteCodeFilter(Filter):
             os.chdir(opts[opts.index('--path')+1])
 
         # Check if we want to execute the code.
-        if not self.no_exec:
+        no_exec = opts[opts.index("no_exec")+1]
+        if not no_exec:
             codeResult = fnc(code,opts)
             if not '--no-echo' in opts:
                 if not '--raw' in opts:
@@ -145,7 +148,7 @@ class ExecuteCodeFilter(Filter):
                 encoding = 'utf8'
                 )
 
-        print('Waiting for MATLAB to start')
+        self.verbosePrint('Waiting for MATLAB to start')
         
         self.matlabProcess.stdin.write('disp(\"#########\")\n')
         self.matlabProcess.stdin.flush()
@@ -157,7 +160,7 @@ class ExecuteCodeFilter(Filter):
             if searchObj: 
                 break
 
-        print('MATLAB started')
+        self.verbosePrint('MATLAB started')
                 
     def stopMatlabProcess(self):
         """ STOPMATLABPROCESS
@@ -166,12 +169,12 @@ class ExecuteCodeFilter(Filter):
         @return: void
         """
 
-        print('Closing Matlab')
+        self.verbosePrint('Closing Matlab')
 
         stdout_value = self.matlabProcess.communicate()[0]
         # print(stdout_value)
 
-        print('Matlab closed')
+        self.verbosePrint('Matlab closed')
         self.matlabProcess = -1       
         
     def executeMatlabCode(self,code,opts):
@@ -220,9 +223,9 @@ class ExecuteCodeFilter(Filter):
         #if '--path' in opts:
             #code = 'cd ' + opts[opts.index('--path')+1]  +';'+ code
 
-        print('Code to execute in MATLAB:')
-        print(code)  
-        print('Send command to MATLAB')
+        self.verbosePrint('Code to execute in MATLAB:')
+        self.verbosePrint(code)  
+        self.verbosePrint('Send command to MATLAB')
 
         self.matlabProcess.stdin.write(code+'\n')
         self.matlabProcess.stdin.flush()
@@ -230,13 +233,13 @@ class ExecuteCodeFilter(Filter):
         self.matlabProcess.stdin.write('disp(\"#########\")\n')
         self.matlabProcess.stdin.flush()
 
-        print('Command output')
+        self.verbosePrint('Command output')
 
         
         codeOut = ''
         while True:
             line = self.matlabProcess.stdout.readline()
-            print(line,end='')
+            self.verbosePrint(line,end='')
             searchObj = re.search(r'>> #########',line,re.M|re.I)
             if searchObj: 
                 break
@@ -246,7 +249,7 @@ class ExecuteCodeFilter(Filter):
 
         codeOut = codeOut[:-2]
 
-        print('End of command output')
+        self.verbosePrint('End of command output')
 
         return codeOut
          
@@ -271,8 +274,8 @@ class ExecuteCodeFilter(Filter):
 
         code = '&&'.join(code)
 
-        print('Code to execute in the shell:')
-        print(code)  
+        self.verbosePrint('Code to execute in the shell:')
+        self.verbosePrint(code)  
 
         ans = os.popen(code).read()
 
