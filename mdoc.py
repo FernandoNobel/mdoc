@@ -34,9 +34,9 @@ def cli():
     """
 
 @cli.command(short_help='Parse a file through the pipeline')
-@click.argument('input', type=click.File('r'))
+@click.argument('input', type=click.File('r'), required=False)
 @click.option('-o','--output', type=click.File('w'), help="Generate an output file.")
-@click.option('-m','--md', is_flag=True, help="Output a markdown file.")
+@click.option('-m','--md', is_flag=True, help="Output a markdown file with the basename of INPUT.")
 @click.option('--no-exec', is_flag=True, help="Do not execute code.")
 @click.option('--intro', is_flag=True, help="Remove double intros.")
 @click.option('-v','--verbose', is_flag=True, help="Verbose output.")
@@ -61,8 +61,11 @@ def parse(input, output, md, no_exec, intro, verbose):
             'verbose', verbose
             ]
 
-    # Read all the file to process.
-    data = input.read()
+    if not input:
+        data = click.get_text_stream('stdin').read()
+    else:
+        # Read all the file to process.
+        data = input.read()
 
     # Set up the pipeline of filters.
     pipeline = Pipeline()
@@ -81,6 +84,10 @@ def parse(input, output, md, no_exec, intro, verbose):
 
     # If markdown flag is used, output the file as a originalName.md.
     if md:
+        if not input:
+            print('Error: name for the output file is not defined. Use -o instead of -m')
+            return
+            
         defaultName = os.path.splitext(input.name)[0] + '.md'
         output = open(defaultName,'w')
 
