@@ -24,6 +24,7 @@ For more information please contact fersann1@upv.es
 * [Installation](#installation)
 * [Table of contents](#table-of-contents)
 * [Parse](#parse)
+* [Make](#make)
 * [Filters](#filters)
 	* [Include text filter](#include-text-filter)
 	* [Execute code filter](#execute-code-filter)
@@ -48,7 +49,21 @@ For more information please contact fersann1@upv.es
   The input file is first processed by the first filter, the output of that
   filter is used as an input for the second filter and so on.
 
-Options:
+# Make
+
+  Parse all the .mdoc files present in the PATH through the pipeline into
+  .md files.
+
+  The pipeline is set by the following filters:
+
+       1. Comment filter
+       2. Include file filter
+       3. Table of contents filter
+       4. Execute code filter
+
+  The files are first processed by the first filter, the output of that
+  filter is used as an input for the second filter and so on.
+
 
 # Filters
 
